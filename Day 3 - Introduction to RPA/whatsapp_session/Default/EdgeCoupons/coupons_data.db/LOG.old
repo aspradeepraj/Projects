@@ -1,0 +1,5 @@
+2026/11/05-16:36:27.618 1ab0 Creating DB C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default\EdgeCoupons/coupons_data.db since it was missing.
+2026/11/05-16:36:27.652 1ab0 Reusing MANIFEST C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/11/05-16:36:27.981 523c Level-0 table #5: started
+2026/11/05-16:36:27.988 523c Level-0 table #5: 683284 bytes OK
+2026/11/05-16:36:27.992 523c Delete type=0 #3

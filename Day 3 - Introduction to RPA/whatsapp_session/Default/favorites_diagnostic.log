@@ -1,0 +1,27 @@
+2026-11-05 11:05:26.502: [INFO] CurrentProfilePath: C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default
+2026-11-05 11:05:26.502: [INFO] Profiles total count: 1
+2026-11-05 11:05:26.503: [INFO] Profile: name=Your Chromium path=C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default lastActive=2026-11-05T10:59:08.873Z
+2026-11-05 11:05:26.503: [INFO] LastUsedProfileDir: C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default
+2026-11-05 11:05:26.503: [INFO] MostRecentlyActiveProfile: name=Your Chromium path=C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default lastActive=2026-11-05T10:59:08.873Z
+2026-11-05 11:05:26.503: [INFO] VisibilityChanged: 0
+2026-11-05 11:05:26.692: [INFO] BookmarkNodeAdded, ABU: 0
+2026-11-05 11:05:26.692: [INFO] OnDoneLoading sync enabled: 0
+2026-11-05 11:05:26.692: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-11-05 11:05:26.692: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-11-05 11:05:26.692: [INFO] BookmarksSnapshot Startup total=1 bar=1 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-11-05 11:06:27.888: [INFO] BookmarkNodeAdded, ABU: 0
+2026-11-05 11:06:27.889: [INFO] BookmarkNodeAdded, ABU: 0
+2026-11-05 11:06:27.889: [INFO] BookmarkNodeAdded, ABU: 0
+2026-11-05 11:06:27.890: [INFO] BookmarkNodeAdded, ABU: 0
+2026-11-05 11:06:29.436: [INFO] BookmarksSnapshot Shutdown total=4 bar=2 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-11-05 11:07:13.143: [INFO] CurrentProfilePath: C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default
+2026-11-05 11:07:13.143: [INFO] Profiles total count: 1
+2026-11-05 11:07:13.143: [INFO] Profile: name=Personal path=C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default lastActive=2026-11-05T11:06:09.725Z
+2026-11-05 11:07:13.143: [INFO] LastUsedProfileDir: C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default
+2026-11-05 11:07:13.143: [INFO] MostRecentlyActiveProfile: name=Personal path=C:\Users\aspra\OneDrive\Desktop\Learning\Projects\Day 3 - Introduction to RPA\whatsapp_session\Default lastActive=2026-11-05T11:06:09.725Z
+2026-11-05 11:07:13.143: [INFO] VisibilityChanged: 0
+2026-11-05 11:07:13.328: [INFO] OnDoneLoading sync enabled: 0
+2026-11-05 11:07:13.328: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-11-05 11:07:13.328: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-11-05 11:07:13.328: [INFO] BookmarksSnapshot Startup total=4 bar=2 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-11-05 11:08:20.825: [INFO] BookmarksSnapshot Shutdown total=4 bar=2 other=0 mobile=0 showBar=0 showBarNTP=1
