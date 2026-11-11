@@ -1,0 +1,55 @@
+{
+    "expedition_info": {
+        "title": "Chennai to Pondicherry Coastal Motorcycle Ride",
+        "total_days": 2,
+        "start_location": "Chennai",
+        "end_location": "Chennai",
+        "travel_month": "August",
+        "budget": {
+            "currency": "INR",
+            "minimum": 5000,
+            "maximum": 12000,
+            "estimated_total_inr": 8000
+        },
+        "primary_rider": {
+            "attire": "Advanced riding experience, full protective riding gear",
+            "gear": "Adventure Touring Motorcycle",
+            "vehicle": "Adventure Touring Motorcycle",
+            "riding_experience": "Advanced riding experience"
+        }
+    },
+    "itinerary": [
+        {
+            "day": 1,
+            "from": "Chennai",
+            "to": "Pondicherry",
+            "distance_km": 150,
+            "riding_hours": 4,
+            "terrain_type": [
+                "Highway"
+            ],
+            "highlights": [
+                "Coastal Highway"
+            ],
+            "day_type": "Riding Day",
+            "weather_notes": "Sunny with occasional showers",
+            "safety_notes": "Be cautious of local traffic, especially in Pondicherry city center"
+        },
+        {
+            "day": 2,
+            "from": "Pondicherry",
+            "to": "Chennai",
+            "distance_km": 150,
+            "riding_hours": 4,
+            "terrain_type": [
+                "Highway"
+            ],
+            "highlights": [
+                "Coastal Highway"
+            ],
+            "day_type": "Riding Day",
+            "weather_notes": "Sunny with occasional showers",
+            "safety_notes": "Be cautious of local traffic, especially in Pondicherry city center"
+        }
+    ]
+}

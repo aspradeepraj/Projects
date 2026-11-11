@@ -1,0 +1,6 @@
+ollama
+jsonschema
+opencv-python
+pillow
+numpy
+
