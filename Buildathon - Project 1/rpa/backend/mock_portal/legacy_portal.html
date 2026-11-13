@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enterprise Legacy PMO Tracker v2.4 (No-API Portal)</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; padding: 30px; }
+        .header { background: #1f2937; color: white; padding: 15px 25px; border-radius: 6px; }
+        .card { background: white; padding: 20px; margin-top: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #e5e7eb; }
+        .badge-green { background: #10b981; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Legacy PMO Delivery Portal (Internal Intranet - Read Only)</h2>
+        <p>Program ID: PRG-2026-CB02 | Last Vendor Update: Today, 09:00 AM</p>
+    </div>
+
+    <div class="card">
+        <h3 id="program-title">Core Banking Cloud Migration - Wave 2</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Governance Metric</th>
+                    <th>Current Reported Value</th>
+                    <th>Vendor Self-Reported Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Active Milestone</td>
+                    <td id="milestone">Milestone 2 (UAT Readiness)</td>
+                    <td>On Track</td>
+                </tr>
+                <tr>
+                    <td>Cumulative Budget Burn</td>
+                    <td id="budget-burn">86.5%</td>
+                    <td>Within Tolerance</td>
+                </tr>
+                <tr>
+                    <td>Sprint Velocity Variance (2-Sprint Avg)</td>
+                    <td id="velocity-var">-24.0%</td>
+                    <td>Minor Dip</td>
+                </tr>
+                <tr>
+                    <td>Unapproved Backlog / Scope Creep</td>
+                    <td id="scope-creep">11.2%</td>
+                    <td>Pending CR</td>
+                </tr>
+                <tr>
+                    <td>Overall Vendor RAG Status</td>
+                    <td>Self-Certified</td>
+                    <td><span id="rag-status" class="badge-green">GREEN (Self-Reported by Vendor)</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

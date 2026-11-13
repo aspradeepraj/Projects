@@ -1,0 +1,4 @@
+ID,Type,Description,Owner,Severity,Status
+RSK-01,Risk,Core ledger API latency exceeding 400ms in UAT,Lead Architect,High,Open
+ISS-04,Issue,11.2% unapproved features added to Sprint 14 without signed CR,Vendor PM,Critical,Escalated
+DEP-02,Dependency,InfoSec penetration testing sign-off delayed by 6 days,Security Team,Medium,In Progress
