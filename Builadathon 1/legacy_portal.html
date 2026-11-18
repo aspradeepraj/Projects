@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Legacy PMO Portal - Core Banking Cloud Migration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f6f9; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { color: #1e3a8a; }
+        .status-green { color: #16a34a; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #1e3a8a; color: white; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Legacy PMO Delivery Portal</h1>
+        <p><strong>Program:</strong> Core Banking Cloud Migration - Wave 2</p>
+        <p><strong>Reported Status:</strong> <span id="vendor-status" class="status-green">GREEN</span></p>
+    </div>
+
+    <div class="card">
+        <h2>Live Delivery Metrics</h2>
+        <table>
+            <tr><th>Metric</th><th>Current Value</th><th>Threshold Limit</th></tr>
+            <tr><td>Budget Burn Rate</td><td id="metric-burn">86.5%</td><td>80.0% (Milestone 3)</td></tr>
+            <tr><td>Unapproved Scope Creep</td><td id="metric-scope">11.2%</td><td>5.0% Max</td></tr>
+            <tr><td>Sprint Velocity Variance</td><td id="metric-velocity">-24.0%</td><td>-20.0% SLA Limit</td></tr>
+        </table>
+    </div>
+</body>
+</html>
