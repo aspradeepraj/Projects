@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import textwrap
 import warnings
 import tempfile
 
@@ -15,10 +16,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from streamlit_agraph import agraph, Node, Edge, Config
 
-# Silence deprecation warnings in terminal
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-# Load environment variables
 load_dotenv(override=True)
 
 st.set_page_config(page_title="Knowledge Graph RAG Studio", layout="wide")
@@ -39,9 +37,8 @@ db = get_neo4j_connection()
 llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 
 
-# --- GUARDRAILS ------------------------------------------------------------
-def check_input_guardrails(query: str) -> tuple[bool, str]:
-    """Blocks empty queries, prompt injections, and unsafe Cypher/SQL patterns."""
+# --- 1. GUARDRAILS ------------------------------------------------------------
+def check_input_guardrails(query):
     cleaned = query.strip()
     if not cleaned:
         return False, "Input Guardrail Blocked: Please enter a valid question."
@@ -56,46 +53,35 @@ def check_input_guardrails(query: str) -> tuple[bool, str]:
     ]
     for pattern in blocked_patterns:
         if re.search(pattern, cleaned, re.IGNORECASE):
-            return (
-                False,
-                f"Input Guardrail Blocked: Unsafe or prompt-injection pattern detected (`{pattern}`).",
-            )
+            return False, f"Input Guardrail Blocked: Unsafe pattern detected ({pattern})."
 
     return True, "Passed"
 
 
-def check_output_guardrails(context_rows: list) -> tuple[bool, str]:
-    """Ensures Neo4j returned actual grounded context before generating an answer."""
+def check_output_guardrails(context_rows):
     if not context_rows:
         return (
             False,
-            "Output Guardrail Triggered: No matching entities or documents were found "
-            "in the Knowledge Graph for this topic.",
+            "Output Guardrail Triggered: No matching entities or documents found in Neo4j.",
         )
     has_data = any(row.get("entity") or row.get("source_text") for row in context_rows)
     if not has_data:
-        return (
-            False,
-            "Output Guardrail Triggered: Retrieved graph records were empty. "
-            "Refusing to hallucinate an answer.",
-        )
+        return False, "Output Guardrail Triggered: Retrieved graph records were empty."
     return True, "Passed"
 
 
-# --- AUTOMATED RAG EVALS (LLM-AS-A-JUDGE) ----------------------------------
-def evaluate_rag_response(question: str, context: str, answer: str) -> dict:
-    """Evaluates Faithfulness, Answer Relevance, and Context Precision on a 1-5 scale."""
+# --- 2. AUTOMATED RAG EVALS (LLM-AS-A-JUDGE) ----------------------------------
+def evaluate_rag_response(question, context, answer):
+    system_msg = (
+        "You are an impartial RAG Evaluation Judge. Score the response from 1 to 5 (5 = best) on three metrics:\n"
+        "1. faithfulness: Is every claim in the Answer strictly supported by the Context without outside hallucination?\n"
+        "2. relevance: Does the Answer directly and completely address the Question?\n"
+        "3. context_precision: Did the retrieved Context contain the right information needed to answer the Question?\n"
+        "Return ONLY valid JSON with keys: 'faithfulness', 'relevance', 'context_precision', and 'reason' (one short sentence)."
+    )
     eval_prompt = ChatPromptTemplate.from_messages(
         [
-            (
-                "system",
-                """You are an impartial RAG Evaluation Judge. Score the response from 1 to 5 (5 = best) on three metrics:
-1. faithfulness: Is every claim in the Answer strictly supported by the Context without outside hallucination?
-2. relevance: Does the Answer directly and completely address the Question?
-3. context_precision: Did the retrieved Context contain the right information needed to answer the Question?
-
-Return ONLY valid JSON with keys: "faithfulness", "relevance", "context_precision", and "reason" (one short sentence).""",
-            ),
+            ("system", system_msg),
             (
                 "human",
                 "Question: {question}\n\nRetrieved Context:\n{context}\n\nGenerated Answer:\n{answer}",
@@ -118,12 +104,17 @@ Return ONLY valid JSON with keys: "faithfulness", "relevance", "context_precisio
         }
 
 
+# --- 3. VISUAL LABEL WRAPPER ----------------------------------------------------
+def wrap_label(text, width=22):
+    return "\n".join(textwrap.wrap(str(text), width=width))
+
+
 def sanitize_keyword(raw: str) -> str:
     """Reduce the LLM keyword to a safe alphanumeric token for Cypher CONTAINS."""
     return re.sub(r"[^a-z0-9 ]", "", raw.lower()).strip()
 
 
-# --- SIDEBAR: Document Upload & Graph Extraction -----------------------------
+# --- SIDEBAR: Document Upload & Graph Extraction --------------------------------
 with st.sidebar:
     st.header("1. Build Knowledge Graph")
     uploaded_file = st.file_uploader("Upload a .txt file (optional)", type=["txt"])
@@ -131,7 +122,7 @@ with st.sidebar:
     chunk_size = st.slider("Chunk Size", min_value=200, max_value=2000, value=1000, step=100)
 
     if st.button("Extract & Store in Neo4j", type="primary"):
-        with st.spinner("Extracting entities and saving to Neo4j AuraDB..."):
+        with st.spinner("Extracting concise entities and saving to Neo4j AuraDB..."):
             if uploaded_file is not None:
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="wb") as tmp:
                     tmp.write(uploaded_file.getvalue())
@@ -147,7 +138,18 @@ with st.sidebar:
             )
             documents = text_splitter.split_documents(raw_documents)
 
-            graph_transformer = LLMGraphTransformer(llm=llm)
+            extraction_sys = (
+                "You are an expert knowledge graph extractor. Extract entities and relationships strictly from the provided text.\n"
+                "CRITICAL RULE: Keep all node IDs concise (1 to 3 words maximum, e.g., 'API', 'Software Applications', 'Python', 'Guido van Rossum'). Never use full sentences as node names."
+            )
+            extraction_prompt = ChatPromptTemplate.from_messages(
+                [
+                    ("system", extraction_sys),
+                    ("human", "{input}"),
+                ]
+            )
+
+            graph_transformer = LLMGraphTransformer(llm=llm, prompt=extraction_prompt)
             graph_documents = graph_transformer.convert_to_graph_documents(documents)
 
             if clear_db:
@@ -155,14 +157,13 @@ with st.sidebar:
             db.add_graph_documents(graph_documents, include_source=True)
             db.refresh_schema()
 
-            st.success(f"Stored graph from {len(documents)} chunk(s) into Neo4j!")
+            st.success(f"Stored clean graph from {len(documents)} chunk(s) into Neo4j!")
 
-# --- MAIN AREA: Natural Language Q&A + Guardrails + Evals + Visual Graph -----
+# --- MAIN AREA: Natural Language Q&A + Guardrails + Evals + Clean Visual Graph ---
 st.subheader("Ask Questions (Graph RAG)")
-user_question = st.text_input("Enter your question:", value="What is RAG?")
+user_question = st.text_input("Enter your question:", value="What is an API?")
 
 if st.button("Ask Graph", type="primary"):
-    # Step 1: Input Guardrail Check
     input_ok, input_msg = check_input_guardrails(user_question)
     if not input_ok:
         st.error(input_msg)
@@ -170,33 +171,29 @@ if st.button("Ask Graph", type="primary"):
 
     with st.spinner("Querying Neo4j Knowledge Graph & Running Guardrails/Evals..."):
         try:
-            # Step 2: Extract core topic keyword safely
             keyword_prompt = (
                 "Extract the single main entity or topic keyword (1-2 words, lowercase, "
                 f"no punctuation) from this question: {user_question}"
             )
             keyword = sanitize_keyword(llm.invoke(keyword_prompt).content)
 
-            # Step 3: Fetch BOTH relationships and source Document text
-            # (parameterized to avoid Cypher injection from the LLM keyword)
+            # Parameterized Cypher — no f-string injection of the LLM keyword
             context_cypher = """
-            OPTIONAL MATCH (d:Document)-[:MENTIONS]->(n)
-            WHERE toLower(n.id) CONTAINS $keyword
-            OPTIONAL MATCH (n)-[r]-(m)
-            WHERE NOT m:Document
-            RETURN DISTINCT n.id AS entity, type(r) AS relationship,
-                              m.id AS related_entity, d.text AS source_text
-            LIMIT 25
+                OPTIONAL MATCH (d:Document)-[:MENTIONS]-(n)
+                WHERE toLower(n.id) CONTAINS $keyword
+                OPTIONAL MATCH (n)-[r]-(m)
+                WHERE NOT m:Document
+                RETURN DISTINCT n.id AS entity, type(r) AS relationship,
+                                  m.id AS related_entity, d.text AS source_text
+                LIMIT 25
             """
             context_rows = db.query(context_cypher, params={"keyword": keyword})
 
-            # Step 4: Output / Grounding Guardrail Check
             output_ok, output_msg = check_output_guardrails(context_rows)
             if not output_ok:
                 st.warning(output_msg)
                 st.stop()
 
-            # Step 5: Generate grounded answer
             context_str = str(context_rows)
             qa_prompt = ChatPromptTemplate.from_messages(
                 [
@@ -213,15 +210,12 @@ if st.button("Ask Graph", type="primary"):
             qa_chain = qa_prompt | llm | StrOutputParser()
             final_answer = qa_chain.invoke({"context": context_str, "question": user_question})
 
-            # Step 6: Run Automated RAG Evaluations
             eval_scores = evaluate_rag_response(user_question, context_str, final_answer)
 
-            # Display Guardrail Status & Answer
             st.success("Guardrails Passed: Input safe & answer strictly grounded in Neo4j context.")
             st.markdown("### Final Answer")
             st.write(final_answer)
 
-            # Display Eval Metrics
             st.markdown("### RAG Evaluation Scores (LLM-as-a-Judge)")
             m1, m2, m3 = st.columns(3)
             m1.metric("Faithfulness (Groundedness)", f"{eval_scores.get('faithfulness', 0)} / 5")
@@ -229,42 +223,82 @@ if st.button("Ask Graph", type="primary"):
             m3.metric("Context Precision", f"{eval_scores.get('context_precision', 0)} / 5")
             st.caption(f"**Judge Summary:** {eval_scores.get('reason', '')}")
 
-            # Step 7: Display Visual Cypher Query & Interactive Graph
-            visual_cypher = f"""MATCH (n)-[r]->(m)
+            visual_cypher = f"""MATCH (n)-[r]-(m)
 WHERE NOT n:Document AND NOT m:Document
   AND (toLower(n.id) CONTAINS '{keyword}' OR toLower(m.id) CONTAINS '{keyword}')
-RETURN n, r, m"""
+RETURN DISTINCT n, r, m"""
 
             with st.expander("View Neo4j Visual Cypher Query", expanded=False):
                 st.code(visual_cypher, language="cypher")
 
-            graph_rows = db.query(
-                """
-                MATCH (n)-[r]->(m)
+            graph_query = """
+                MATCH (n)-[r]-(m)
                 WHERE NOT n:Document AND NOT m:Document
                   AND (toLower(n.id) CONTAINS $keyword OR toLower(m.id) CONTAINS $keyword)
-                RETURN n.id AS source, type(r) AS rel, m.id AS target
-                """,
-                params={"keyword": keyword},
-            )
+                RETURN DISTINCT n.id AS source, type(r) AS rel, m.id AS target
+            """
+            graph_rows = db.query(graph_query, params={"keyword": keyword})
 
             if graph_rows:
                 st.markdown("### Interactive Knowledge Graph View")
                 nodes_dict = {}
                 edges = []
+                seen_edges = set()
 
                 for row in graph_rows:
-                    src = row["source"]
-                    tgt = row["target"]
+                    src = row.get("source")
+                    tgt = row.get("target")
+                    rel = row.get("rel")
+                    if not src or not tgt:
+                        continue
+
                     if src not in nodes_dict:
-                        nodes_dict[src] = Node(id=src, label=src, size=25, color="#4A90E2")
+                        is_main = keyword in src.lower()
+                        nodes_dict[src] = Node(
+                            id=src,
+                            label=wrap_label(src),
+                            size=32 if is_main else 24,
+                            color="#2563EB" if is_main else "#10B981",
+                            font={"size": 14, "color": "#1F2937", "face": "arial"},
+                        )
                     if tgt not in nodes_dict:
-                        nodes_dict[tgt] = Node(id=tgt, label=tgt, size=25, color="#50E3C2")
-                    edges.append(Edge(source=src, label=row["rel"], target=tgt))
+                        is_main = keyword in tgt.lower()
+                        nodes_dict[tgt] = Node(
+                            id=tgt,
+                            label=wrap_label(tgt),
+                            size=32 if is_main else 24,
+                            color="#2563EB" if is_main else "#10B981",
+                            font={"size": 14, "color": "#1F2937", "face": "arial"},
+                        )
+
+                    edge_key = (src, rel, tgt)
+                    if edge_key not in seen_edges:
+                        seen_edges.add(edge_key)
+                        edges.append(
+                            Edge(
+                                source=src,
+                                label=rel,
+                                target=tgt,
+                                color="#64748B",
+                                font={"size": 12, "color": "#334155", "align": "top"},
+                            )
+                        )
 
                 config = Config(
-                    width="100%", height=450, directed=True,
-                    physics=True, hierarchical=False,
+                    width="100%",
+                    height=520,
+                    directed=True,
+                    physics={
+                        "enabled": True,
+                        "barnesHut": {
+                            "gravitationalConstant": -4500,
+                            "centralGravity": 0.2,
+                            "springLength": 220,
+                            "springConstant": 0.04,
+                            "avoidOverlap": 1,
+                        },
+                    },
+                    hierarchical=False,
                 )
                 agraph(nodes=list(nodes_dict.values()), edges=edges, config=config)
 
